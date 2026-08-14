@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Career Simulator V1.0 — Build 001</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#171c24; --panel2:#202733; --text:#f3f5f7; --muted:#a9b2bf;
+    --accent:#5ee38f; --danger:#ff6b6b; --gold:#ffd166; --line:#2b3442;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    background:linear-gradient(180deg,#0b0e13,#121721 40%,#0e1116); color:var(--text);
+    min-height:100vh;
+  }
+  .wrap{max-width:980px;margin:auto;padding:16px 16px 32px}
+  h1,h2,h3{margin:.2em 0 .6em}
+  .title{font-size:clamp(28px,6vw,48px);font-weight:900;letter-spacing:-1px}
+  .sub{color:var(--muted);margin-bottom:18px}
+  .card{
+    background:rgba(23,28,36,.96); border:1px solid var(--line); border-radius:18px;
+    padding:16px; margin:12px 0; box-shadow:0 12px 30px rgba(0,0,0,.18);
+  }
+  .grid{display:grid;gap:12px}
+  .grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .grid4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  @media(max-width:720px){.grid2,.grid3,.grid4{grid-template-columns:1fr}}
+  label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+  input,select,button{
+    width:100%; border-radius:12px; border:1px solid var(--line); padding:12px 13px; font-size:16px;
+    background:#111721; color:var(--text);
+  }
+  button{
+    cursor:pointer; font-weight:800; background:#222b38;
+  }
+  button.primary{background:var(--accent);color:#07110b;border:none}
+  button.warn{background:#3b2b1e;color:#ffe2b9}
+  button.danger{background:#3b2020;color:#ffd0d0}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .row > *{flex:1 1 180px}
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;
+    background:#232b36;border:1px solid var(--line);font-size:13px;color:#dfe6ee
+  }
+  .stat{padding:12px;background:var(--panel2);border-radius:14px;border:1px solid var(--line)}
+  .stat b{display:block;font-size:24px}
+  .stat span{color:var(--muted);font-size:12px}
+  .bigovr{font-size:56px;font-weight:950;line-height:1}
+  .accent{color:var(--accent)} .gold{color:var(--gold)} .dangerText{color:var(--danger)}
+  .muted{color:var(--muted)}
+  .hidden{display:none!important}
+  .tabs{display:flex;gap:8px;overflow:auto;padding-bottom:6px}
+  .tabs button{min-width:max-content;width:auto;padding:10px 12px}
+  .tabs button.active{background:#eef2f7;color:#111}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:9px 7px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:#bdc6d2;font-size:12px}
+  .offer{border-left:4px solid var(--accent)}
+  .achievement{border-left:4px solid var(--gold)}
+  .event{border-left:4px solid #7aa7ff}
+  .footer{color:#6f7b8a;font-size:12px;text-align:center;margin-top:18px}
+  .progress{height:8px;background:#111720;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+  .progress > div{height:100%;background:var(--accent)}
+  .kicker{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#7e8b9b;font-weight:800}
+  .sep{height:1px;background:var(--line);margin:14px 0}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="setup">
+    <div class="kicker">Career Simulator V1.0</div>
+    <div class="title">Build 001</div>
+    <div class="sub">Simulador de carrera futbolística con progresión contextual, mercado, competencia por el puesto y legado.</div>
+    <div id="jsStatus" class="card" style="padding:10px 12px;border-left:4px solid var(--danger)">
+      <b>Motor JavaScript: NO INICIADO</b>
+      <div class="muted" style="margin-top:4px">Si este mensaje no cambia a ACTIVO, el visor del iPad está bloqueando JavaScript.</div>
+    </div>
+
+    <div class="card">
+      <h2>Crear jugador</h2>
+      <div class="grid grid2">
+        <div>
+          <label>Nombre</label>
+          <input id="nameInput" value="Carlos Capella" />
+        </div>
+        <div>
+          <label>Nacionalidad</label>
+          <select id="nationInput">
+            <option>España</option><option>Argentina</option><option>Brasil</option><option>Francia</option>
+            <option>Italia</option><option>Alemania</option><option>Inglaterra</option><option>Portugal</option>
+            <option>Países Bajos</option><option>México</option><option>Colombia</option><option>Japón</option>
+            <option>Marruecos</option><option>Egipto</option>
+          </select>
+        </div>
+        <div>
+          <label>Edad inicial</label>
+          <select id="ageInput">
+            <option value="15">15</option><option value="16" selected>16</option><option value="17">17</option><option value="18">18</option>
+          </select>
+        </div>
+        <div>
+          <label>Posición principal</label>
+          <select id="posInput">
+            <option>POR</option><option>LD</option><option>LI</option><option>DFC</option><option>MCD</option>
+            <option>MC</option><option>MD</option><option>MI</option><option>MCO</option><option>ED</option>
+            <option>EI</option><option selected>DC</option>
+          </select>
+        </div>
+      </div>
+      <div class="sep"></div>
+      <button id="startBtn" class="primary" type="button" onclick="startCareerSafe()">Comenzar carrera</button>
+    </div>
+
+    <div class="card">
+      <h3>Qué incluye esta build</h3>
+      <div class="muted">Media global, potencial oculto, perfiles de desarrollo, estadísticas específicas por posición, forma, titularidad, ofertas coherentes con nivel y edad, competencia directa, historial, títulos, récords e hitos narrativos.</div>
+    </div>
+  </div>
+
+  <div id="game" class="hidden">
+    <div id="storageWarning" class="hidden card" style="border-left:4px solid var(--gold)">
+      <b>⚠️ Guardado local no disponible</b>
+      <div class="muted" style="margin-top:6px">Puedes jugar normalmente, pero este visor podría no conservar la partida al cerrar la página. Más adelante podemos añadir exportar/importar partida.</div>
+    </div>
+    <div class="row" style="align-items:flex-start">
+      <div>
+        <div class="kicker">Career Simulator V1.0 — Build 001</div>
+        <h1 id="playerName"></h1>
+        <div id="playerMeta" class="muted"></div>
+      </div>
+      <div style="max-width:180px">
+        <div class="card" style="text-align:center;margin:0">
+          <div class="muted">MEDIA</div>
+          <div id="ovr" class="bigovr accent">--</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="active" onclick="showTab('home',this)">Inicio</button>
+      <button onclick="showTab('club',this)">Club</button>
+      <button onclick="showTab('offers',this)">Ofertas</button>
+      <button onclick="showTab('history',this)">Historial</button>
+      <button onclick="showTab('honours',this)">Palmarés</button>
+      <button onclick="showTab('legacy',this)">Legado</button>
+    </div>
+
+    <div id="tab-home">
+      <div class="grid grid3">
+        <div class="stat"><span>Club</span><b id="clubName">--</b></div>
+        <div class="stat"><span>Temporada</span><b id="seasonLabel">--</b></div>
+        <div class="stat"><span>Rol</span><b id="roleLabel">--</b></div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <div class="kicker">Estado actual</div>
+            <h2 id="formLabel">Forma: --</h2>
+            <div id="contextText" class="muted"></div>
+          </div>
+          <div>
+            <button class="primary" id="simBtn" onclick="simulateSeason()">Simular temporada</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Última temporada</h2>
+        <div id="seasonStats" class="grid grid4"></div>
+      </div>
+
+      <div id="eventBox"></div>
+    </div>
+
+    <div id="tab-club" class="hidden">
+      <div class="card">
+        <h2 id="clubTitle"></h2>
+        <div class="grid grid3">
+          <div class="stat"><span>Prestigio histórico</span><b id="clubPrestige"></b></div>
+          <div class="stat"><span>Nivel actual</span><b id="clubLevel"></b></div>
+          <div class="stat"><span>Liga</span><b id="clubLeague"></b></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Competencia por tu puesto</h3>
+        <div id="competitionList"></div>
+      </div>
+    </div>
+
+    <div id="tab-offers" class="hidden">
+      <div class="card">
+        <h2>Mercado</h2>
+        <div class="muted">Las ofertas aparecen al terminar la temporada y dependen de tu media, edad, rendimiento, prestigio y necesidad posicional del club.</div>
+      </div>
+      <div id="offersList"></div>
+    </div>
+
+    <div id="tab-history" class="hidden">
+      <div class="card">
+        <h2>Historial de carrera</h2>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Temp.</th><th>Edad</th><th>Club</th><th>Media</th><th>PJ</th><th>Tit.</th><th>G</th><th>A</th><th>Nota</th></tr></thead>
+            <tbody id="historyBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-honours" class="hidden">
+      <div class="card"><h2>Títulos y premios</h2><div id="honoursList"></div></div>
+    </div>
+
+    <div id="tab-legacy" class="hidden">
+      <div class="grid grid3">
+        <div class="stat"><span>Legado</span><b id="legacyScore" class="gold">0</b></div>
+        <div class="stat"><span>Prestigio personal</span><b id="reputationScore">0</b></div>
+        <div class="stat"><span>Media máxima</span><b id="peakOvr">0</b></div>
+      </div>
+      <div class="card"><h2>Hitos narrativos</h2><div id="achievementsList"></div></div>
+      <div class="card"><h2>Récords</h2><div id="recordsList"></div></div>
+    </div>
+
+    <div class="footer">Build 001 · Datos y clubes simplificados para playtesting. Guardado automático en este dispositivo.</div>
+  </div>
+</div>
+
+<script>
+const POS_GROUPS = {
+  POR:"GK", LD:"FB", LI:"FB", DFC:"CB", MCD:"DM", MC:"CM", MD:"WM", MI:"WM", MCO:"AM", ED:"WG", EI:"WG", DC:"ST"
+};
+
+const LEAGUES = {
+  ESP1:{name:"LaLiga", tier:1, strength:92},
+  ESP2:{name:"Segunda División", tier:2, strength:76},
+  ENG1:{name:"Premier League", tier:1, strength:94},
+  ENG2:{name:"Championship", tier:2, strength:78},
+  ITA1:{name:"Serie A", tier:1, strength:90},
+  ITA2:{name:"Serie B", tier:2, strength:74},
+  GER1:{name:"Bundesliga", tier:1, strength:90},
+  GER2:{name:"2. Bundesliga", tier:2, strength:74},
+  FRA1:{name:"Ligue 1", tier:1, strength:86},
+  FRA2:{name:"Ligue 2", tier:2, strength:70},
+  NED1:{name:"Eredivisie", tier:1, strength:82},
+  ARG1:{name:"Primera Argentina", tier:1, strength:80},
+  BRA1:{name:"Brasileirão", tier:1, strength:82},
+  MEX1:{name:"Liga MX", tier:1, strength:76},
+  COL1:{name:"Primera A", tier:1, strength:72},
+  USA1:{name:"MLS", tier:1, strength:74},
+  KSA1:{name:"Saudi Pro League", tier:1, strength:78},
+  JPN1:{name:"J1 League", tier:1, strength:70, simplified:true},
+  CHN1:{name:"Chinese Super League", tier:1, strength:67, simplified:true},
+  EGY1:{name:"Egyptian Premier League", tier:1, strength:66, simplified:true},
+  MAR1:{name:"Botola Pro", tier:1, strength:65, simplified:true}
+};
+
+const CLUBS = [
+  c("Real Madrid","ESP1",99,95), c("Barcelona","ESP1",98,93), c("Atlético Madrid","ESP1",91,88),
+  c("Athletic Club","ESP1",84,84), c("Villarreal","ESP1",82,83), c("Real Betis","ESP1",81,82),
+  c("Real Sociedad","ESP1",82,82), c("Valencia","ESP1",84,79), c("Sevilla","ESP1",86,78),
+  c("Albacete","ESP2",61,66), c("Sporting Gijón","ESP2",68,68), c("Valladolid","ESP2",71,70),
+  c("Liverpool","ENG1",95,93), c("Manchester City","ENG1",94,94), c("Arsenal","ENG1",93,92),
+  c("Manchester United","ENG1",96,87), c("Chelsea","ENG1",92,88), c("Tottenham","ENG1",88,86),
+  c("Leeds United","ENG1",77,78), c("Sunderland","ENG1",76,77), c("Middlesbrough","ENG2",70,72),
+  c("Inter","ITA1",92,91), c("Milan","ITA1",94,88), c("Juventus","ITA1",95,88), c("Napoli","ITA1",88,88),
+  c("Roma","ITA1",89,85), c("Palermo","ITA2",73,73),
+  c("Bayern","GER1",96,93), c("Dortmund","GER1",90,88), c("Leverkusen","GER1",84,89),
+  c("RB Leipzig","GER1",83,85), c("Stuttgart","GER1",79,83), c("Schalke","GER2",79,72),
+  c("PSG","FRA1",93,94), c("Marseille","FRA1",86,85), c("Lyon","FRA1",88,80), c("Monaco","FRA1",82,84),
+  c("Ajax","NED1",89,84), c("PSV","NED1",84,86), c("Feyenoord","NED1",82,85),
+  c("River Plate","ARG1",90,87), c("Boca Juniors","ARG1",90,85),
+  c("Flamengo","BRA1",88,88), c("Palmeiras","BRA1",87,88),
+  c("Club América","MEX1",83,83), c("Monterrey","MEX1",80,82),
+  c("Atlético Nacional","COL1",79,79), c("Millonarios","COL1",77,78),
+  c("LAFC","USA1",78,80), c("Inter Miami","USA1",79,81),
+  c("Al Hilal","KSA1",86,88), c("Al Nassr","KSA1",84,86), c("Al Ittihad","KSA1",83,85),
+  c("Kashima Antlers","JPN1",76,77), c("Urawa Red Diamonds","JPN1",77,77),
+  c("Shanghai Port","CHN1",75,76), c("Al Ahly","EGY1",82,80), c("Wydad Casablanca","MAR1",78,77)
+];
+
+function c(name,league,prestige,level){return {name,league,prestige,level,basePrestige:prestige,baseLevel:level};}
+
+let state = null;
+
+function rnd(min,max){return Math.random()*(max-min)+min;}
+function rndi(min,max){return Math.floor(rnd(min,max+1));}
+function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function chance(p){return Math.random()<p}
+function normalish(){return (Math.random()+Math.random()+Math.random()+Math.random()-2)/2;}
+
+function initialOvr(age,pos){
+  let base = {15:59,16:62,17:65,18:68}[age] || 62;
+  if(["POR","DFC"].includes(pos)) base -= 1;
+  return clamp(base + rndi(-2,2),55,72);
+}
+
+function devProfile(){
+  const x=Math.random();
+  if(x<0.05) return "prodigy";
+  if(x<0.18) return "early";
+  if(x<0.72) return "normal";
+  if(x<0.92) return "late";
+  return "longevity";
+}
+
+function potentialFor(ovr,age,profile){
+  let bonus = profile==="prodigy"?rndi(22,30):profile==="early"?rndi(16,24):profile==="late"?rndi(16,25):rndi(13,22);
+  if(age===15) bonus+=2;
+  return clamp(ovr+bonus,72,98);
+}
+
+function startCareer(){
+  const name=document.getElementById("nameInput").value.trim()||"Jugador";
+  const nationality=document.getElementById("nationInput").value;
+  const age=+document.getElementById("ageInput").value;
+  const pos=document.getElementById("posInput").value;
+  const ovr=initialOvr(age,pos);
+  const profile=devProfile();
+  const pot=potentialFor(ovr,age,profile);
+
+  let starterPool=CLUBS.filter(x=>["ESP2","FRA2","ITA2","GER2","ENG2","NED1","ARG1","BRA1","MEX1","COL1"].includes(x.league) && x.level<=76);
+  let club=JSON.parse(JSON.stringify(pick(starterPool)));
+
+  state={
+    name,nationality,age,pos,secondary:[],ovr,potential:pot,profile,
+    longevity:rnd(.75,1.25),consistency:rnd(.75,1.2),
+    club, seasonYear:2026, form:0, role:"Promesa",
+    history:[], honours:[], achievements:[], records:[],
+    offers:[], legacy:0, reputation:clamp(ovr-45,5,30), peakOvr:ovr,
+    lastStats:null, seasonsAtClub:0, totalApps:0,totalGoals:0,totalAssists:0,totalCleanSheets:0
+  };
+  document.getElementById("setup").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  renderAll();
+  save();
+}
+
+function expectedRole(){
+  const gap=state.ovr-state.club.level;
+  if(state.age<=16 && gap<-8) return "Promesa";
+  if(gap>=3) return "Estrella";
+  if(gap>=-1) return "Titular";
+  if(gap>=-6) return "Rotación";
+  return state.age<=20?"Promesa":"Residual";
+}
+
+function positionStats(group, apps, starts, minutesFactor, teamFactor, performanceSeed){
+  const q = clamp((state.ovr-55)/35,0.1,1.1);
+  const s = clamp(performanceSeed,0.55,1.45);
+  let st={};
+  if(group==="ST"){
+    st.goals=Math.max(0,Math.round(apps*(0.18+0.42*q)*s*rnd(.8,1.2)));
+    st.assists=Math.max(0,Math.round(apps*(0.05+0.12*q)*rnd(.7,1.3)));
+    st.chances=Math.round(apps*(0.8+1.2*q)*s);
+  } else if(group==="WG"){
+    st.goals=Math.max(0,Math.round(apps*(0.10+0.25*q)*s*rnd(.8,1.2)));
+    st.assists=Math.max(0,Math.round(apps*(0.08+0.22*q)*s*rnd(.8,1.2)));
+    st.chances=Math.round(apps*(1.0+1.5*q)*s);
+    st.dribbles=Math.round(apps*(1.2+2.2*q)*s);
+  } else if(group==="AM"){
+    st.goals=Math.max(0,Math.round(apps*(0.07+0.18*q)*s));
+    st.assists=Math.max(0,Math.round(apps*(0.11+0.26*q)*s));
+    st.chances=Math.round(apps*(1.4+1.8*q)*s);
+    st.passPct=Math.round(clamp(75+12*q+rnd(-3,3),70,94));
+    st.dribbles=Math.round(apps*(0.8+1.6*q)*s);
+  } else if(group==="CM" || group==="DM"){
+    st.goals=Math.max(0,Math.round(apps*(group==="CM"?0.05:0.02)*q*s));
+    st.assists=Math.max(0,Math.round(apps*(0.05+0.14*q)*s));
+    st.passPct=Math.round(clamp(74+15*q+rnd(-3,3),68,95));
+    st.chances=Math.round(apps*(group==="CM"?0.9:0.5)*(0.8+q)*s);
+    st.dribbles=Math.round(apps*(group==="CM"?0.8:0.35)*(0.8+q)*s);
+    st.recoveries=Math.round(apps*(group==="DM"?4.2:2.8)*(0.8+q)*s);
+  } else if(group==="WM"){
+    st.goals=Math.max(0,Math.round(apps*(0.07+0.17*q)*s));
+    st.assists=Math.max(0,Math.round(apps*(0.08+0.20*q)*s));
+    st.chances=Math.round(apps*(0.9+1.2*q)*s);
+    st.dribbles=Math.round(apps*(0.9+1.5*q)*s);
+    st.recoveries=Math.round(apps*(1.5+1.2*q)*s);
+  } else if(group==="FB"){
+    st.goals=Math.max(0,Math.round(apps*0.02*q*s));
+    st.assists=Math.max(0,Math.round(apps*(0.05+0.14*q)*s));
+    st.recoveries=Math.round(apps*(2.8+2.0*q)*s);
+    st.cleanSheets=Math.round(apps*clamp(0.18+0.28*teamFactor,0.1,0.55)*rnd(.8,1.15));
+  } else if(group==="CB"){
+    st.goals=Math.max(0,Math.round(apps*(0.01+0.04*q)*s));
+    st.assists=Math.max(0,Math.round(apps*0.02*q*s));
+    st.recoveries=Math.round(apps*(3.4+2.2*q)*s);
+    st.cleanSheets=Math.round(apps*clamp(0.2+0.30*teamFactor,0.1,0.6)*rnd(.8,1.15));
+    st.cards=Math.round(apps*clamp(0.18-0.05*q,0.07,0.2)*rnd(.7,1.3));
+  } else if(group==="GK"){
+    st.goals=0; st.assists=0;
+    st.cleanSheets=Math.round(apps*clamp(0.18+0.32*teamFactor,0.08,0.62)*rnd(.8,1.15));
+    st.saves=Math.round(apps*(2.0+2.8*(1-teamFactor)+1.2*q)*s);
+  }
+  return st;
+}
+
+function evaluatePerformance(stats, role, expectedApps){
+  const g=POS_GROUPS[state.pos];
+  let score=50;
+
+  // Contextual availability / minutes:
+  let appRatio = stats.apps / Math.max(1,expectedApps);
+  score += clamp((appRatio-1)*18,-14,12);
+
+  if(state.age<=16 && stats.apps>=5) score += 5;
+  if(state.age<=17 && stats.starts>=8) score += 4;
+
+  // Positional production:
+  if(g==="ST"){
+    score += clamp((stats.goals/Math.max(1,stats.apps)-0.30)*55,-12,20);
+    score += clamp((stats.chances/Math.max(1,stats.apps)-1.2)*8,-5,8);
+  } else if(g==="WG"){
+    score += clamp(((stats.goals+stats.assists)/Math.max(1,stats.apps)-0.34)*45,-12,20);
+    score += clamp((stats.dribbles/Math.max(1,stats.apps)-2.0)*5,-5,7);
+  } else if(g==="AM"){
+    score += clamp(((stats.goals+stats.assists)/Math.max(1,stats.apps)-0.30)*38,-10,16);
+    score += clamp((stats.chances/Math.max(1,stats.apps)-1.5)*7,-5,8);
+    score += (stats.passPct-82)*0.8;
+  } else if(g==="CM"||g==="DM"){
+    score += (stats.passPct-82)*0.9;
+    score += clamp((stats.chances/Math.max(1,stats.apps)-(g==="CM"?1.1:.65))*7,-5,7);
+    score += clamp((stats.recoveries/Math.max(1,stats.apps)-(g==="DM"?5.0:3.5))*4,-6,8);
+    score += clamp((stats.dribbles/Math.max(1,stats.apps)-(g==="CM"?1.0:.45))*3,-3,4);
+  } else if(g==="WM"){
+    score += clamp(((stats.goals+stats.assists)/Math.max(1,stats.apps)-0.28)*35,-10,15);
+    score += clamp((stats.recoveries/Math.max(1,stats.apps)-2.1)*3,-4,5);
+  } else if(g==="FB"){
+    score += clamp((stats.recoveries/Math.max(1,stats.apps)-4.0)*4,-8,10);
+    score += clamp((stats.assists/Math.max(1,stats.apps)-0.12)*35,-5,8);
+    score += clamp((stats.cleanSheets/Math.max(1,stats.apps)-0.30)*28,-7,9);
+  } else if(g==="CB"){
+    score += clamp((stats.recoveries/Math.max(1,stats.apps)-4.8)*4,-8,10);
+    score += clamp((stats.cleanSheets/Math.max(1,stats.apps)-0.32)*30,-7,10);
+    score += clamp((0.13-stats.cards/Math.max(1,stats.apps))*20,-4,3);
+  } else if(g==="GK"){
+    score += clamp((stats.cleanSheets/Math.max(1,stats.apps)-0.30)*34,-10,12);
+    score += clamp((stats.saves/Math.max(1,stats.apps)-3.3)*5,-8,10);
+  }
+
+  // Club / league difficulty reward
+  score += (LEAGUES[state.club.league].strength-75)*0.12;
+  score += (state.club.level-75)*0.10;
+
+  return clamp(Math.round(score),15,95);
+}
+
+function ageGrowthModifier(){
+  const a=state.age, g=POS_GROUPS[state.pos], p=state.profile;
+  let peakStart = {GK:28,CB:27,FB:24,DM:26,CM:26,AM:25,WG:24,WM:24,ST:25}[g]||25;
+  let mod;
+  if(a<=18) mod=1.35;
+  else if(a<=21) mod=1.2;
+  else if(a<=24) mod=1.0;
+  else if(a<peakStart+2) mod=.75;
+  else if(a<32) mod=.25;
+  else mod=-0.45-(a-32)*0.12;
+
+  if(p==="early" && a<=21) mod+=.25;
+  if(p==="late" && a>=23 && a<=29) mod+=.30;
+  if(p==="prodigy" && a<=22) mod+=.35;
+  if(p==="longevity" && a>=30) mod+=.30;
+  return mod*state.longevity;
+}
+
+function expectedAppsForRole(role){
+  const base={Estrella:34,Titular:31,Rotación:20,Promesa:9,Residual:7}[role]||18;
+  let ageAdj=(state.age<=16? -1:0);
+  return clamp(base+ageAdj+rndi(-2,2),3,38);
+}
+
+function simulateSeason(){
+  const role=expectedRole();
+  state.role=role;
+
+  const expectedApps=expectedAppsForRole(role);
+  let formSeed = clamp(1 + normalish()*0.22*state.consistency + state.form*0.03,0.55,1.45);
+  let apps=clamp(Math.round(expectedApps*rnd(.82,1.18)),0,40);
+
+  // injuries: meaningful but not chaotic
+  if(chance(0.10)) apps=Math.max(0,apps-rndi(4,12));
+  if(chance(0.025)) apps=Math.max(0,apps-rndi(12,24));
+
+  let startRate={Estrella:.92,Titular:.82,Rotación:.46,Promesa:.28,Residual:.18}[role]||.5;
+  let starts=clamp(Math.round(apps*startRate*rnd(.85,1.12)),0,apps);
+
+  const teamFactor=clamp((state.club.level-60)/40,.1,1);
+  let s=positionStats(POS_GROUPS[state.pos],apps,starts,starts/Math.max(1,apps),teamFactor,formSeed);
+  s.apps=apps;s.starts=starts;
+
+  const perf=evaluatePerformance(s,role,expectedApps);
+  const oldOvr=state.ovr;
+
+  // progression based on contextual performance, age and hidden potential
+  let baseGrowth=(perf-48)/13;
+  let growth=baseGrowth*ageGrowthModifier();
+
+  // proximity to potential
+  if(growth>0){
+    const room=state.potential-state.ovr;
+    growth *= clamp(room/15,0.10,1.15);
+  }
+
+  // small bounded stochasticity
+  growth += normalish()*0.65;
+  if(perf>=82 && state.age<=22 && chance(0.06)) growth += rndi(1,2); // rare breakout
+  if(perf<35 && state.age>=29) growth -= .5;
+
+  let delta=Math.round(clamp(growth,-4,6));
+  if(state.age<=16 && apps>=5 && perf>=55) delta=Math.max(delta,0);
+  if(state.age<=17 && perf>=70) delta=Math.max(delta,1);
+
+  state.ovr=clamp(state.ovr+delta,48,99);
+  state.peakOvr=Math.max(state.peakOvr,state.ovr);
+
+  // form and reputation
+  state.form=perf>=75?2:perf>=62?1:perf>=48?0:perf>=35?-1:-2;
+  state.reputation=clamp(state.reputation + Math.round((perf-50)/9) + (state.club.prestige>88 && perf>65?1:0),0,100);
+
+  // club performance and world evolution
+  simulateClubEvolution(perf);
+
+  // Titles
+  let titles=simulateTitles(perf);
+  titles.forEach(t=>state.honours.push({season:seasonName(),club:state.club.name,title:t}));
+
+  // totals
+  state.totalApps+=apps;
+  state.totalGoals+=(s.goals||0);
+  state.totalAssists+=(s.assists||0);
+  state.totalCleanSheets+=(s.cleanSheets||0);
+
+  const note=perf>=82?"Excelente":perf>=70?"Muy buena":perf>=58?"Buena":perf>=45?"Correcta":perf>=33?"Floja":"Muy mala";
+  const hist={season:seasonName(),age:state.age,club:state.club.name,startOvr:oldOvr,endOvr:state.ovr,
+              apps,starts,goals:s.goals||0,assists:s.assists||0,perf,note,stats:s,titles};
+  state.history.push(hist);
+  state.lastStats=hist;
+  state.seasonsAtClub++;
+
+  // legacy and achievements
+  updateLegacy(hist);
+  generateOffers(hist);
+
+  // age and season advance
+  state.age++;
+  state.seasonYear++;
+  state.role=expectedRole();
+
+  save(); renderAll();
+}
+
+function simulateClubEvolution(perf){
+  // level changes more than prestige; large clubs mean-revert strongly
+  let performanceNoise=normalish()*2.2;
+  let playerImpact=(perf-55)/30;
+  state.club.level=clamp(Math.round(state.club.level + performanceNoise + playerImpact),55,97);
+
+  let pull=(state.club.baseLevel-state.club.level)*0.12;
+  state.club.level=clamp(Math.round(state.club.level+pull),55,97);
+
+  let prestigeGain=0;
+  if(state.club.level>state.club.prestige+5) prestigeGain=1;
+  if(state.club.level<state.club.prestige-10 && chance(.35)) prestigeGain=-1;
+  state.club.prestige=clamp(state.club.prestige+prestigeGain,
+    Math.max(45,state.club.basePrestige-8), Math.min(99,state.club.basePrestige+14));
+}
+
+function simulateTitles(perf){
+  const L=LEAGUES[state.club.league];
+  const titles=[];
+  const leagueProb=clamp((state.club.level-78)/75,0.005,.38);
+  const cupProb=clamp((state.club.level-72)/120,0.01,.22);
+  if(chance(leagueProb)) titles.push("Liga");
+  if(chance(cupProb)) titles.push("Copa nacional");
+  if(L.tier===1 && state.club.level>=86 && chance(clamp((state.club.level-84)/90,0.01,.18))) titles.push("Título continental");
+  if(titles.length && perf>=78 && chance(.45)) state.legacy+=3;
+  return titles;
+}
+
+function updateLegacy(h){
+  let gain=0;
+  if(h.perf>=80) gain+=2;
+  if(h.perf>=90) gain+=2;
+  if(h.titles.length) gain+=h.titles.length*2;
+  if(state.seasonsAtClub>=5) gain+=1;
+  state.legacy=clamp(state.legacy+gain,0,100);
+
+  addAchievement("debut","🌱 Debut profesional", state.history.length===1);
+  addAchievement("100apps","💯 Centenario", state.totalApps>=100);
+  addAchievement("250apps","🛡️ Veterano", state.totalApps>=250);
+  addAchievement("clublegend","👑 Leyenda del club", state.seasonsAtClub>=7 && state.legacy>=45 && h.titles.length>0);
+  addAchievement("oneclub","🏠 Uno Di Noi", state.seasonsAtClub>=10 && state.history.every(x=>x.club===state.club.name));
+  addAchievement("architect","🏗️ El Arquitecto", state.club.basePrestige<70 && state.club.prestige>=78 && state.seasonsAtClub>=5);
+  addAchievement("giantkiller","⚔️ Matagigantes", state.club.basePrestige<75 && h.titles.includes("Copa nacional") && h.perf>=80);
+  addAchievement("elite","⭐ Élite mundial", state.ovr>=90);
+  addAchievement("longevity","🕰️ Carrera legendaria", state.age>=35 && state.ovr>=82);
+}
+
+function addAchievement(id,title,condition){
+  if(condition && !state.achievements.some(a=>a.id===id)){
+    state.achievements.push({id,title,season:seasonName(),club:state.club.name});
+    state.legacy=clamp(state.legacy+4,0,100);
+  }
+}
+
+function generateOffers(h){
+  state.offers=[];
+  let interested=CLUBS.filter(x=>x.name!==state.club.name);
+  let target=state.ovr + (h.perf-55)/12 + (state.age<=21?2:0);
+
+  interested=interested.filter(x=>{
+    const gap=Math.abs(x.level-target);
+    const tooBig=x.level>target+13;
+    const tooSmall=x.level<target-15;
+    if(tooBig||tooSmall) return false;
+    let p=.18 + (13-gap)*.018;
+    if(state.age<=19 && x.prestige>=90) p*=.45;
+    if(x.level>=90 && state.ovr<78) p*=.25;
+    return chance(clamp(p,.03,.55));
+  });
+
+  interested.sort((a,b)=>b.prestige-a.prestige);
+  for(const club0 of interested.slice(0,4)){
+    const club=JSON.parse(JSON.stringify(club0));
+    const rivals=makeCompetition(club);
+    const titularity=estimateStartingChance(club,rivals);
+    state.offers.push({club,rivals,titularity});
+  }
+}
+
+function makeCompetition(club){
+  const count=rndi(2,3);
+  const arr=[];
+  for(let i=0;i<count;i++){
+    let base=club.level + rndi(-7,5);
+    if(i===0) base+=2;
+    arr.push({pos:state.pos,ovr:clamp(base,58,95),age:rndi(20,33)});
+  }
+  return arr.sort((a,b)=>b.ovr-a.ovr);
+}
+
+function estimateStartingChance(club,rivals){
+  const best=rivals[0]?.ovr||club.level;
+  let p=50+(state.ovr-best)*8;
+  if(state.age<=18) p-=8;
+  if(state.form>=1) p+=6;
+  return clamp(Math.round(p),8,92);
+}
+
+function acceptOffer(i){
+  const offer=state.offers[i];
+  if(!offer)return;
+  state.club=offer.club;
+  state.seasonsAtClub=0;
+  state.offers=[];
+  state.role=expectedRole();
+  state.reputation=clamp(state.reputation + Math.round((state.club.prestige-75)/12),0,100);
+  save(); renderAll(); showTabByName("home");
+}
+
+function seasonName(){
+  return `${state.seasonYear}/${String(state.seasonYear+1).slice(-2)}`;
+}
+
+function formText(){
+  return state.form>=2?"🔥 Excelente":state.form===1?"🟢 Buena":state.form===0?"⚪ Normal":state.form===-1?"🟠 Mala":"🔴 Muy mala";
+}
+
+function renderAll(){
+  if(!state)return;
+  document.getElementById("playerName").textContent=state.name;
+  document.getElementById("playerMeta").textContent=`${state.nationality} · ${state.age} años · ${state.pos}${state.secondary.length?" / "+state.secondary.join(", "):""}`;
+  document.getElementById("ovr").textContent=state.ovr;
+  document.getElementById("clubName").textContent=state.club.name;
+  document.getElementById("seasonLabel").textContent=seasonName();
+  document.getElementById("roleLabel").textContent=expectedRole();
+  document.getElementById("formLabel").textContent=`Forma: ${formText()}`;
+  document.getElementById("contextText").textContent=`${LEAGUES[state.club.league].name} · Prestigio ${state.club.prestige} · Nivel ${state.club.level}`;
+  renderStats();
+  renderClub();
+  renderOffers();
+  renderHistory();
+  renderHonours();
+  renderLegacy();
+}
+
+function renderStats(){
+  const el=document.getElementById("seasonStats");
+  if(!state.lastStats){el.innerHTML=`<div class="muted">Aún no has disputado ninguna temporada.</div>`;return;}
+  const h=state.lastStats, s=h.stats;
+  let arr=[["PJ",h.apps],["Titular",h.starts],["Goles",h.goals],["Asist.",h.assists]];
+  const g=POS_GROUPS[state.pos];
+  if(["ST","WG","AM","CM","DM","WM"].includes(g) && s.chances!=null) arr.push(["Ocasiones",s.chances]);
+  if(s.passPct!=null) arr.push(["% pases",s.passPct+"%"]);
+  if(s.dribbles!=null) arr.push(["Regates",s.dribbles]);
+  if(s.recoveries!=null) arr.push(["Robos",s.recoveries]);
+  if(s.cleanSheets!=null) arr.push(["P. a cero",s.cleanSheets]);
+  if(s.saves!=null) arr.push(["Paradas",s.saves]);
+  if(s.cards!=null) arr.push(["Tarjetas",s.cards]);
+  arr.push(["Rendimiento",h.perf+"/100"],["Media",`${h.startOvr} → ${h.endOvr}`]);
+  el.innerHTML=arr.map(x=>`<div class="stat"><span>${x[0]}</span><b>${x[1]}</b></div>`).join("");
+}
+
+function renderClub(){
+  document.getElementById("clubTitle").textContent=state.club.name;
+  document.getElementById("clubPrestige").textContent=state.club.prestige;
+  document.getElementById("clubLevel").textContent=state.club.level;
+  document.getElementById("clubLeague").textContent=LEAGUES[state.club.league].name;
+  const rivals=makeCompetition(state.club);
+  const p=estimateStartingChance(state.club,rivals);
+  document.getElementById("competitionList").innerHTML =
+    rivals.map(r=>`<div class="row" style="margin:8px 0"><span class="pill">${r.pos}</span><b>Media ${r.ovr}</b><span class="muted">${r.age} años</span></div>`).join("")+
+    `<div class="sep"></div><b>Probabilidad estimada de titularidad: ${p}%</b>
+     <div class="progress" style="margin-top:8px"><div style="width:${p}%"></div></div>`;
+}
+
+function renderOffers(){
+  const el=document.getElementById("offersList");
+  if(!state.offers.length){el.innerHTML=`<div class="card muted">No hay ofertas activas. Simula una temporada para generar interés de mercado.</div>`;return;}
+  el.innerHTML=state.offers.map((o,i)=>`
+    <div class="card offer">
+      <div class="row">
+        <div>
+          <h3>${o.club.name}</h3>
+          <div class="muted">${LEAGUES[o.club.league].name} · Prestigio ${o.club.prestige} · Nivel ${o.club.level}</div>
+          <div style="margin-top:10px"><b>Titularidad estimada: ${o.titularity}%</b></div>
+          <div class="progress" style="margin-top:6px"><div style="width:${o.titularity}%"></div></div>
+          <div class="muted" style="margin-top:8px">Competencia: ${o.rivals.map(r=>`${r.pos} ${r.ovr}`).join(" · ")}</div>
+        </div>
+        <div style="max-width:180px"><button class="primary" onclick="acceptOffer(${i})">Aceptar oferta</button></div>
+      </div>
+    </div>`).join("");
+}
+
+function renderHistory(){
+  document.getElementById("historyBody").innerHTML=state.history.slice().reverse().map(h=>`
+    <tr><td>${h.season}</td><td>${h.age}</td><td>${h.club}</td><td>${h.startOvr}→${h.endOvr}</td>
+    <td>${h.apps}</td><td>${h.starts}</td><td>${h.goals}</td><td>${h.assists}</td><td>${h.note} (${h.perf})</td></tr>
+  `).join("");
+}
+
+function renderHonours(){
+  const el=document.getElementById("honoursList");
+  if(!state.honours.length){el.innerHTML=`<div class="muted">Todavía no has ganado títulos.</div>`;return;}
+  el.innerHTML=state.honours.slice().reverse().map(h=>`<div class="achievement" style="padding:10px 12px;margin:8px 0;background:#202733;border-radius:12px">
+    🏆 <b>${h.title}</b> · ${h.club} · ${h.season}
+  </div>`).join("");
+}
+
+function renderLegacy(){
+  document.getElementById("legacyScore").textContent=state.legacy;
+  document.getElementById("reputationScore").textContent=state.reputation;
+  document.getElementById("peakOvr").textContent=state.peakOvr;
+  const a=document.getElementById("achievementsList");
+  a.innerHTML=state.achievements.length?state.achievements.slice().reverse().map(x=>`
+    <div class="achievement" style="padding:10px 12px;margin:8px 0;background:#202733;border-radius:12px"><b>${x.title}</b><div class="muted">${x.club} · ${x.season}</div></div>
+  `).join(""):`<div class="muted">Tus hitos aparecerán aquí.</div>`;
+
+  const rec=[];
+  if(state.totalApps>=100) rec.push(`Partidos profesionales: ${state.totalApps}`);
+  if(state.totalGoals>=50) rec.push(`Goles profesionales: ${state.totalGoals}`);
+  if(state.totalAssists>=50) rec.push(`Asistencias profesionales: ${state.totalAssists}`);
+  if(state.totalCleanSheets>=50) rec.push(`Porterías a cero: ${state.totalCleanSheets}`);
+  document.getElementById("recordsList").innerHTML=rec.length?rec.map(x=>`<div class="pill" style="margin:4px">${x}</div>`).join(""):`<div class="muted">Aún no has alcanzado un récord destacado.</div>`;
+}
+
+function showTab(name,btn){
+  ["home","club","offers","history","honours","legacy"].forEach(x=>document.getElementById("tab-"+x).classList.toggle("hidden",x!==name));
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");
+}
+function showTabByName(name){
+  const buttons=[...document.querySelectorAll(".tabs button")];
+  const idx=["home","club","offers","history","honours","legacy"].indexOf(name);
+  showTab(name,buttons[idx]);
+}
+
+function save(){
+  try{
+    localStorage.setItem("careerSimV1",JSON.stringify(state));
+  }catch(e){
+    console.warn("Guardado local no disponible en este visor. La partida seguirá funcionando mientras la página permanezca abierta.", e);
+    const w=document.getElementById("storageWarning");
+    if(w) w.classList.remove("hidden");
+  }
+}
+function load(){
+  try{
+    const raw=localStorage.getItem("careerSimV1");
+    if(!raw)return;
+    state=JSON.parse(raw);
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+    renderAll();
+  }catch(e){}
+}
+
+function startCareerSafe(){
+  try{
+    var btn=document.getElementById("startBtn");
+    if(btn){ btn.textContent="Iniciando…"; btn.disabled=true; }
+    startCareer();
+  }catch(e){
+    var msg=(e && e.message) ? e.message : String(e);
+    console.error(e);
+    alert("Error al iniciar la partida: " + msg);
+    var btn2=document.getElementById("startBtn");
+    if(btn2){ btn2.textContent="Comenzar carrera"; btn2.disabled=false; }
+  }
+}
+
+(function markJsActive(){
+  var el=document.getElementById("jsStatus");
+  if(el){
+    el.style.borderLeftColor="var(--accent)";
+    el.innerHTML="<b>Motor JavaScript: ACTIVO ✓</b><div class='muted' style='margin-top:4px'>El visor está ejecutando el juego correctamente.</div>";
+  }
+})();
+
+load();
+</script>
+</body>
+</html>
